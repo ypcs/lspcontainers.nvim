@@ -79,7 +79,7 @@ local function dos2UnixSafePath(workdir)
 end
 
 -- default command to run the lsp container
-local default_cmd = function(runtime, workdir, image, network, docker_volume)
+local default_cmd = function(runtime, workdir, image, network, docker_volume, cmd)
     if vim.loop.os_uname().sysname == "Windows_NT" then
         workdir = dos2UnixSafePath(workdir)
     end
@@ -91,7 +91,7 @@ local default_cmd = function(runtime, workdir, image, network, docker_volume)
         mnt_volume = "--volume=" .. workdir .. ":" .. workdir .. ":z"
     end
 
-    return {
+    params = {
         runtime,
         "container",
         "run",
@@ -101,8 +101,13 @@ local default_cmd = function(runtime, workdir, image, network, docker_volume)
         "--workdir=" .. workdir,
         mnt_volume,
         "--tmpfs=/tmp",
-        image
+        image,
     }
+
+    if cmd ~=  nil then
+      vim.list_extend(params, cmd)
+    end
+    return params
 end
 
 local function command(server, user_opts)
@@ -113,6 +118,7 @@ local function command(server, user_opts)
         cmd_builder = default_cmd,
         network = "none",
         docker_volume = nil,
+        cmd = nil,
     }
 
     -- If the LSP is known, it override the defaults:
@@ -130,7 +136,7 @@ local function command(server, user_opts)
         return 1
     end
 
-    return opts.cmd_builder(opts.container_runtime, opts.root_dir, opts.image, opts.network, opts.docker_volume)
+    return opts.cmd_builder(opts.container_runtime, opts.root_dir, opts.image, opts.network, opts.docker_volume, opts.cmd)
 end
 
 local function on_event(_, data, event)

@@ -86,9 +86,9 @@ local default_cmd = function(runtime, workdir, image, network, docker_volume, cm
 
     local mnt_volume
     if docker_volume ~= nil then
-        mnt_volume = "--volume=" .. docker_volume .. ":" .. workdir .. ":z"
+        mnt_volume = "--volume=" .. docker_volume .. ":" .. workdir .. ":ro,z"
     else
-        mnt_volume = "--volume=" .. workdir .. ":" .. workdir .. ":z"
+        mnt_volume = "--volume=" .. workdir .. ":" .. workdir .. ":ro,z"
     end
 
     params = {
